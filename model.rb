@@ -1,3 +1,5 @@
+require 'bcrypt'
+
 DataMapper.setup(:default, "sqlite://#{Dir.pwd}/db.sqlite")
 
 class User
@@ -31,7 +33,7 @@ DataMapper.auto_upgrade!
 
 # Create a test User
 if User.count == 0
-  @user = User.create(username: "admin")
+  @user          = User.create(username: "admin")
   @user.password = "admin"
   @user.save
 end
