@@ -4,6 +4,7 @@ Bundler.require
 # load the Database and User model
 require './model'
 
+# 这里是调用 Warden::Strategies.add 接口来添加验证逻辑;
 Warden::Strategies.add(:password) do
   def valid?
     params['user'] && params['user']['username'] && params['user']['password']
@@ -23,26 +24,25 @@ Warden::Strategies.add(:password) do
 end
 
 class SinatraWardenExample < Sinatra::Base
-  enable :sessions
+  enable :sessions, :logging
   register Sinatra::Flash
   set :session_secret, "supersecret"
-
   use Warden::Manager do |config|
-    # Tell Warden how to save our User info into a session.
-    # Sessions can only take strings, not Ruby code, we'll store
-    # the User's `id`
+    # 这里需要告诉 Warden 怎么来序列化用户信息到会话里.
     config.serialize_into_session { |user| user.id }
-    # Now tell Warden how to take what we've stored in the session
-    # and get a User from that information.
+    # 怎么反序列化用户信息
     config.serialize_from_session { |id| User.get(id) }
 
     config.scope_defaults :default,
                           # "strategies" is an array of named methods with which to
                           # attempt authentication. We have to define this later.
+                          # 策略也就是一个方法名的数组, 用来验证.
                           strategies: [:password],
                           # The action is a route to send the user to when
                           # warden.authenticate! returns a false answer. We'll show
                           # this route below.
+
+                          # 这个 action 在这里的作用是告诉 warden.auth 在失败后路由到哪里.
                           action:     'auth/unauthenticated'
     # When a user tries to log in and cannot, this specifies the
     # app to send the user to.
